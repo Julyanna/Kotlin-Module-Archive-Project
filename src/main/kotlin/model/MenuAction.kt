@@ -1,7 +1,7 @@
 package model
 
-enum class MenuAction(val isCustom: Boolean) {
-    CREATE_ITEM(false),
-    EXIT(false),
-    CHOOSE_ITEM(true)
+enum class MenuAction() {
+    CREATE_ITEM,
+    EXIT,
+    CHOOSE_ITEM
 }

@@ -1,11 +1,17 @@
 package screens
 
 import model.MenuAction
+import model.Item
 import model.MenuItem
+import java.util.Locale
 import java.util.Scanner
 
-open class Menu {
+open class Menu() {
     private val scanner = Scanner(System.`in`)
+    companion object {
+        const val EXIT_MESSAGE = "Чтобы выйти из меню создания, введите q"
+        const val EXIT_SIGN = "q"
+    }
 
     open fun onStart(title: String) { //Меню выбора
 
@@ -35,7 +41,22 @@ open class Menu {
         }
     }
 
-    fun showMenuList(menu: Map<Int, MenuItem>) {
+    fun <T : Item> createMenuList(itemName: String, exitName: String, items: MutableSet<T>): Map<Int, MenuItem> {
+        val menu: MutableMap<Int, MenuItem> = mutableMapOf(
+            0 to MenuItem("Создать $itemName", MenuAction.CREATE_ITEM)
+        )
+        var orderMenuItems = 1
+        for (item in items) {
+            menu[orderMenuItems] = MenuItem(item.getItemName(), MenuAction.CHOOSE_ITEM)
+            orderMenuItems += 1
+        }
+        menu[orderMenuItems] = MenuItem(exitName, MenuAction.EXIT)
+        return menu
+    }
+    open fun createMenuList(): Map<Int, MenuItem> {
+        return mutableMapOf()
+    }
+    private fun showMenuList(menu: Map<Int, MenuItem>) {
         for (key in menu.keys) {
             val menuItem = menu[key]
             if (menuItem != null) {
@@ -43,12 +64,35 @@ open class Menu {
             }
         }
     }
-
-    open fun createMenuList(): Map<Int, MenuItem> {
-        return mutableMapOf()
+    open fun onCreateItem() {
+    }
+    fun <T : Item> onCreateItem(itemName: String, items: MutableSet<T>) {
+        var isExit = false
+        while (!isExit) {
+            println("Введите название $itemName. $EXIT_MESSAGE")
+            val itemNameInput = checkNotNullNextLine("Название $itemName не может быть пустым.")
+            if (itemNameInput != null) {
+                if (EXIT_SIGN == itemNameInput.lowercase(Locale.getDefault())) {
+                    isExit = true
+                } else {
+                    var isItemExist = false
+                    for (item in items) {
+                        if (item.getItemName() == itemNameInput) {
+                            isItemExist = true
+                            break
+                        }
+                    }
+                    if (isItemExist) println("Такое название $itemName уже есть.")
+                    else {
+                        onCreateContinue(itemNameInput)
+                        isExit = true
+                    }
+                }
+            }
+        }
     }
 
-    open fun onCreateItem() { //Создание архива
+    open fun onCreateContinue(itemNameInput: String)  {
     }
 
     open fun onChooseItem(menuItem: MenuItem) {
